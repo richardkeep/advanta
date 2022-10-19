@@ -1,42 +1,15 @@
 <?php
 
-
 namespace PhilipNjuguna\Advanta;
 
-
 use Carbon\Carbon;
-use Symfony\Component\Dotenv\Dotenv;
-use function Couchbase\defaultDecoder;
 
-include_once("../vendor/autoload.php");
+use function Couchbase\defaultDecoder;
 
 class AdvantaSMS
 {
-
-    /**
-     * Define env method similar to laravel's
-     *
-     * @param String $env_param | Environment Param Name
-     *
-     * @return String
-     */
-    public static function env(string $env_param): string
+    public function sendMessage($to, $message, $time  = null)
     {
-
-        $dotenv = new Dotenv();
-
-        $dotenv->load('../.env');
-
-        $env = getenv($env_param);
-
-        return $env;
-    }
-
-
-    public function sendMessage($to, $message , $time  = null)
-    {
-
-
         $url = 'https://quicksms.advantasms.com/api/services/sendsms/';
 
 
@@ -46,11 +19,9 @@ class AdvantaSMS
             'pass_type' => 'plain',
         ];
 
-        if (! is_null($time))
-        {
+        if (! is_null($time)) {
             $data[ "timeToSend"] = Carbon::parse($time)->format('Y-m-d H:i');
-        }
-        else{
+        } else {
             $data[ "timeToSend"] =  Carbon::now()->format('Y-m-d H:i');
         }
 
@@ -61,11 +32,9 @@ class AdvantaSMS
         $count = 0;
 
         try {
-
             if ($response != null) {
-                $responseData = json_decode($response, TRUE);
+                $responseData = json_decode($response, true);
                 foreach ($responseData as $responseItem) {
-
                     foreach ($responseItem as $smsdetails) {
                         $messageID = $responseData['responses'][$count]['messageid'];
 
@@ -74,8 +43,7 @@ class AdvantaSMS
                     }
                 }
             }
-        }catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             return true;
         }
     }
@@ -99,22 +67,16 @@ class AdvantaSMS
         ];
 
         return  $this->sendRequest($url, $curlData);
-
     }
 
     public function sendRequest(string $url, array $curlData = [])
     {
-
-
         $curl_post_data = array(
             //Fill in the request parameters with valid values
             'partnerID' => env('ADVANTA_PARTNER_ID'),
             'apikey' => env('ADVANTA_API_KEY'),
             'shortcode' => env('ADVANTA_SHORT_CODE'),
         );
-
-
-
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -135,6 +97,5 @@ class AdvantaSMS
 
 
         return $curl_response;
-
     }
 }
